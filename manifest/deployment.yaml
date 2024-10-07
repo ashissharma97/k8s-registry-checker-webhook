@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-checker-webhook
+  labels:
+    app: registry-checker-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry-checker-webhook
+  template:
+    metadata:
+      labels:
+        app: registry-checker-webhook
+    spec:
+      containers:
+      - name: server
+        image: localhost:5001/registry-checker-webhook:v7
+        imagePullPolicy: Always
+        env:
+        - name: PORT
+          value: "8443"
+        - name: TLS_CRT_PATH
+          value: "/etc/webhook/certs/tls.crt"
+        - name: TLS_KEY_PATH
+          value: "/etc/webhook/certs/tls.key"
+        - name: ALLOW_REGISTRY_NAME
+          value: "localhost"
+        volumeMounts:
+        - name: webhook-tls-certs
+          mountPath: /etc/webhook/certs/
+          readOnly: true
+      volumes:
+      - name: webhook-tls-certs
+        secret:
+          secretName: registry-checker-webhook-tls
